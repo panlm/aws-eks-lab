@@ -83,6 +83,13 @@ nodeGroups:
     source /var/lib/cloud/scripts/eksctl/bootstrap.helper.sh
     /etc/eks/bootstrap.sh ${CLUSTER_NAME} --container-runtime containerd --kubelet-extra-args "--node-labels=${NODE_LABELS}"
 
+iam:
+  withOIDC: true
+
+addons:
+- name: vpc-cni # no version is specified so it deploys the default version
+  version: latest
+
 ```
 
 

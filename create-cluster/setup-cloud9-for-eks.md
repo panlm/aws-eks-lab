@@ -12,48 +12,14 @@ title: This is a github note
 ## install
 1. resize disk - [[cloud9-resize-instance-volume-script]]
 2. disable temporary credential from settings and delete `aws_session_token=` line in `~/.aws/credentials`
-
-```sh
-ROLE_NAME=adminrole-$RANDOM
-cat > trust.json <<-EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "Service": "ec2.amazonaws.com"
-            },
-            "Action": "sts:AssumeRole"
-        }
-    ]
-}
-EOF
-sudo yum install -y jq
-aws iam create-role --role-name ${ROLE_NAME} \
-  --assume-role-policy-document file://trust.json
-aws iam attach-role-policy --role-name ${ROLE_NAME} \
-  --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
-aws iam create-instance-profile --instance-profile-name ${ROLE_NAME}
-aws iam add-role-to-instance-profile --instance-profile-name ${ROLE_NAME} --role-name ${ROLE_NAME}
-
-INST_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.instanceId')
-aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${ROLE_NAME} --instance-id ${INST_ID}
-
-```
-
 3. install dependencies
 ```sh
 # install others
 sudo yum -y install jq gettext bash-completion moreutils wget
 
-# install kubectl
-# 1.24.x newest version has some bug, downgrade to 1.23.8
-sudo curl --location -o /usr/local/bin/kubectl \
-   "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-
-# 1.23.x version of kubectl
-# sudo curl --silent --location -o /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/v1.23.8/bin/linux/amd64/kubectl"
+# install kubectl with +/- 1 cluster version 1.23.8 / 1.22.11
+# sudo curl --location -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo curl --silent --location -o /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/v1.22.11/bin/linux/amd64/kubectl"
 
 # 1.22.x version of kubectl
 # sudo curl --silent --location -o /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/v1.22.11/bin/linux/amd64/kubectl"
@@ -104,6 +70,36 @@ sudo yum -y install cargo
 cargo install jwt-cli
 
 ```
+
+4. assign role to instance
+```sh
+ROLE_NAME=adminrole-$RANDOM
+cat > trust.json <<-EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOF
+aws iam create-role --role-name ${ROLE_NAME} \
+  --assume-role-policy-document file://trust.json
+aws iam attach-role-policy --role-name ${ROLE_NAME} \
+  --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
+aws iam create-instance-profile --instance-profile-name ${ROLE_NAME}
+aws iam add-role-to-instance-profile --instance-profile-name ${ROLE_NAME} --role-name ${ROLE_NAME}
+
+INST_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document |jq -r '.instanceId')
+aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${ROLE_NAME} --instance-id ${INST_ID}
+
+```
+
 
 ## refer
 - https://docs.amazonaws.cn/en_us/eks/latest/userguide/install-aws-iam-authenticator.html
