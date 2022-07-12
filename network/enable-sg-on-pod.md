@@ -3,6 +3,10 @@ created: 2022-06-15 09:40:23.381
 last_modified: 2022-06-15 09:40:23.381
 tags: aws/container/eks aws/network/security-group 
 ---
+```ad-attention
+title: This is a github note
+
+```
 # enable-sg-on-pod
 https://www.eksworkshop.com/beginner/115_sg-per-pod/
 

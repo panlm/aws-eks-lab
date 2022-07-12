@@ -7,9 +7,7 @@ tags: aws/container/eks awscorp/marykay/poc-pcf-eks
 title: This is a github note
 
 ```
-
 # eks-private-access-cluster
-
 ## prep your vpc
 - [[create-standard-vpc-for-lab]]
 

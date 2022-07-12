@@ -8,7 +8,6 @@ title: This is a github note
 
 ```
 # setup-cloud9-for-eks
-
 ## install
 1. resize disk - [[cloud9-resize-instance-volume-script]]
 2. disable temporary credential from settings and delete `aws_session_token=` line in `~/.aws/credentials`
@@ -71,8 +70,9 @@ cargo install jwt-cli
 
 ```
 
-4. assign role to instance
+4. 分配管理员role到instance，你可以手工执行该步骤。或者如果你有workshop的Credentials，直接先复制粘贴到命令行，再执行下列步骤（直接执行下列步骤可能遇到权限不够的告警）
 ```sh
+AWS_DEFAULT_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 ROLE_NAME=adminrole-$RANDOM
 cat > trust.json <<-EOF
 {
@@ -93,6 +93,7 @@ aws iam create-role --role-name ${ROLE_NAME} \
 aws iam attach-role-policy --role-name ${ROLE_NAME} \
   --policy-arn "arn:aws:iam::aws:policy/AdministratorAccess"
 aws iam create-instance-profile --instance-profile-name ${ROLE_NAME}
+sleep 15
 aws iam add-role-to-instance-profile --instance-profile-name ${ROLE_NAME} --role-name ${ROLE_NAME}
 
 INST_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document |jq -r '.instanceId')
@@ -100,6 +101,12 @@ aws ec2 associate-iam-instance-profile --iam-instance-profile Name=${ROLE_NAME} 
 
 ```
 
+5. disable cloud9 aws credential management
+```sh
+aws cloud9 update-environment  --environment-id $C9_PID --managed-credentials-action DISABLE
+rm -vf ${HOME}/.aws/credentials
+
+```
 
 ## refer
 - https://docs.amazonaws.cn/en_us/eks/latest/userguide/install-aws-iam-authenticator.html

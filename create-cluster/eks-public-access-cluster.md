@@ -8,7 +8,6 @@ title: This is a github note
 
 ```
 # eks-public-access-cluster
-
 ## prep
 - do not need to create vpc in advance
 - [[setup-cloud9-for-eks]] or using your local environment
@@ -26,10 +25,10 @@ kind: ClusterConfig
 
 metadata:
   name: ekscluster1 # MODIFY cluster name, have another one in nodeGroup section
-  region: "us-east-1" # MODIFY region
+  region: "us-east-2" # MODIFY region
   version: "1.21" # MODIFY version
 
-availabilityZones: ["us-east-1a", "us-east-1b", "us-east-1c"]
+availabilityZones: ["us-east-2a", "us-east-2b", "us-east-2c"]
 
 # REPLACE THIS CODE BLOCK
 # vpc:
@@ -76,7 +75,7 @@ nodeGroups:
   ssh:
     enableSsm: true
   privateNetworking: true
-  ami: ami-06a8057d9b6a06ee6
+  ami: ami-00f6c910b8daeb523
   amiFamily: AmazonLinux2
   overrideBootstrapCommand: |
     #!/bin/bash
@@ -87,14 +86,25 @@ iam:
   withOIDC: true
 
 addons:
-- name: vpc-cni # no version is specified so it deploys the default version
+- name: vpc-cni 
+  version: latest
+- name: coredns
+  version: latest # auto discovers the latest available
+- name: kube-proxy
   version: latest
 
 ```
 
+```sh
+# get optimized eks ami id for your version & region
+EKS_VERSION=1.21
+AWS_REGION=us-east-2
+aws ssm get-parameter --name /aws/service/eks/optimized-ami/${EKS_VERSION}/amazon-linux-2/recommended/image_id --region ${AWS_REGION} --query "Parameter.Value" --output text
+
+```
 
 ## default tags on subnet
-[[eksctl-default-tags-on-subnet]]
+- [[eksctl-default-tags-on-subnet]]
 
 ## network topo preview
 - [[security-group-for-eks-deepdive]]
@@ -102,6 +112,5 @@ addons:
 ## refer
 - [[eks-private-access-cluster]]
 - [[eks-nodegroup]]
-
 
 
